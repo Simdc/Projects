@@ -31,7 +31,7 @@ class setup_parameters:
     def call_inputvars():
         
         
-        return Navier_stokes_variables.input_variables(NX = 369, NY = 369, DOMAIN_SIZE_X = 1.0, N_ITERATIONS = 250, N_PRESSURE_POISSON_ITERATIONS = 50, TIME_STEP_LENGTH = 0.000001, STABILITY_SAFETY_FACTOR = 0.5, KINEMATIC_VISCOSITY = 0.1, DENSITY = 1.0)
+        return Navier_stokes_variables.input_variables(NX = 205, NY = 205, DOMAIN_SIZE_X = 1.0, N_ITERATIONS = 1000, N_PRESSURE_POISSON_ITERATIONS = 50, TIME_STEP_LENGTH = 0.000000001, STABILITY_SAFETY_FACTOR = 0.5, KINEMATIC_VISCOSITY = 0.1, DENSITY = 1.0)
 #------------------------------------------------#    
     def call_mesh_grid(NX, NY, DOMAIN_SIZE_X, DOMAIN_SIZE_Y):
         
@@ -82,6 +82,8 @@ X, Y, DX, DY = setup_parameters.call_mesh_grid(NX, NY, DOMAIN_SIZE_X, DOMAIN_SIZ
 
 
 # # Solution loop
+
+# # Plot solution and error
 
 # In[4]:
 
@@ -188,6 +190,10 @@ if __name__ == '__main__':
 #------------------------------------------------#
         # Velocity Boundary Conditions: Homogeneous Dirichlet BC everywhere
         # except for the horizontal velocity at the top, which is prescribed
+        inflow_mass_rate_next = np.sum(u_next[:, 0])
+        outflow_mass_rate_next = np.sum(u_next[:, -2])
+        
+        u_next[:, -1] =  u_next[:, -2] * inflow_mass_rate_next / outflow_mass_rate_next
         
         u_next = boundary_update.velocity_boundary_x(u_next)
         v_next = boundary_update.velocity_boundary_y(v_next)
@@ -215,28 +221,35 @@ if __name__ == '__main__':
         TIME_STEP_LENGTH = test_stability.test_CFL_number_calculation(u_next, v_next, DX, DY, TIME_STEP_LENGTH) 
 
 
-# # Plot solution and error
-
 # In[5]:
 
 
-#Plotting the contour
-
-Visual.visualize_vector_plot(X, Y, u_next, v_next, color = 'black', streamplot = False, quiverplot = True)
-
-Visual.visualize_contour_plot(X, Y, T_next, ticks=np.linspace(-10, 10, 20))
-
-
-# In[6]:
-
-
-Visual.visualize_error_plot(Spin_up,N_ITERATIONS)
+plt.figure()
+plt.contourf(X[::2, ::2], Y[::2, ::2], u_next[::2, ::2], cmap="coolwarm")
+plt.colorbar()
+plt.quiver(X[::2, ::2], Y[::2, ::2], u_next[::2, ::2], v_next[::2, ::2], color="black")
+plt.streamplot(X[::2, ::2], Y[::2, ::2], u_next[::2, ::2], v_next[::2, ::2], color="black")
+plt.xlim((0, 1))
+plt.ylim((0, 0.5))
+plt.show()
 
 
-# In[7]:
+# In[ ]:
 
 
-T_next
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
